@@ -1,0 +1,13 @@
+{
+  "name": "record-to-pdf",
+  "version": "1.0.0",
+  "description": "Generate Hipoteken mortgage simulation PDF from CRM data",
+  "main": "generate.js",
+  "scripts": {
+    "generate": "node generate.js",
+    "start": "node generate.js"
+  },
+  "dependencies": {
+    "puppeteer": "^22.0.0"
+  }
+}
