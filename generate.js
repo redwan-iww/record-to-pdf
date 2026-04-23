@@ -111,9 +111,11 @@ function boxHdr(text, italic = false) {
 }
 
 function row(left, right, opts = {}) {
-  const { bold = false, topBorder = false, orangeText = false } = opts;
-  return `<div style="display:flex;align-items:baseline;padding:2px 0;font-size:13px;${bold ? "font-weight:800;" : ""}${topBorder ? `border-top:2px solid #333;margin-top:3px;padding-top:4px;` : ""}${orangeText ? `color:${ORANGE};font-style:italic;` : ""}">
-    <span style="width:50%;flex-shrink:0;font-weight:700;">${left}</span><span style="white-space:nowrap;">${right}</span>
+  const { bold = false, topBorder = false, orangeText = false, tab = false } = opts;
+  const leftStyle = tab ? "width:50%;flex-shrink:0;font-weight:700;" : "font-weight:700;";
+  const flexStyle = tab ? "" : "justify-content:space-between;";
+  return `<div style="display:flex;${flexStyle}align-items:baseline;padding:2px 0;font-size:13px;${bold ? "font-weight:800;" : ""}${topBorder ? `border-top:2px solid #333;margin-top:3px;padding-top:4px;` : ""}${orangeText ? `color:${ORANGE};font-style:italic;` : ""}">
+    <span style="${leftStyle}">${left}</span><span style="white-space:nowrap;">${right}</span>
   </div>`;
 }
 
@@ -171,18 +173,19 @@ function buildHTML(d) {
   body { font-family:'Nunito',Arial,sans-serif; font-size:13.5px; font-weight:500; color:#1a1a1a; background:white; }
   .page {
     width:210mm; height:297mm;
-   padding: 6mm 17mm 9mm 17mm;
+    padding: 6mm 17mm 9mm 17mm;
     overflow:hidden; position:relative;
     break-after:page; page-break-after:always;
+    display:flex; flex-direction:column;
   }
   .page:last-child { break-after:auto; page-break-after:auto; }
-  .page-num { position:absolute; bottom:8mm; right:17mm; font-size:16px; font-weight:700; }
+  .page-num { position:absolute; bottom:8mm; right:17mm; font-size:16px; font-weight:700; z-index:2; }
   .main-title { font-size:30px; font-weight:800; color:${ORANGE}; }
   .sec-title { font-size:23px; font-weight:800; color:${ORANGE}; margin:4mm 0 3mm; }
   .sub-title { font-size:17px; font-weight:800; color:${ORANGE}; margin:3mm 0 2mm; }
+  .why-box { background:#FCEEE4; padding:6mm 17mm 8mm; margin:4mm -17mm -9mm; flex:1 0 auto; }
   .icon-grid {
     display:grid; grid-template-columns:1fr 1fr 1fr;
-    border:2px solid ${ORANGE};
   }
   .icon-grid > div + div { border-left:2px solid ${ORANGE}; }
   .icon-grid > div:nth-child(n+4) { border-top:2px solid ${ORANGE}; }
@@ -206,17 +209,17 @@ function buildHTML(d) {
 
   ${box(`
     ${boxHdr("Your property purchase:")}
-    ${row("Price:", fmt(d.Property_Price))}
-    ${row("Area:", d.Area)}
-    ${row("Status:", d.Status)}
-    ${row("Type of property:", d.PropertySalesType)}
+    ${row("Price:", fmt(d.Property_Price), { tab: true })}
+    ${row("Area:", d.Area, { tab: true })}
+    ${row("Status:", d.Status, { tab: true })}
+    ${row("Type of property:", d.PropertySalesType, { tab: true })}
   `)}
 
   ${box(`
     ${boxHdr("Your potential mortgage:")}
-    ${row("Loan to Value:", pct(d.LTV))}
-    ${row("Resulting mortgage:", fmt(d.Resulting_Mortgage))}
-    ${row("Mortgage term:", d.Mortgage_term_Years + " yrs")}
+    ${row("Loan to Value:", pct(d.LTV), { tab: true })}
+    ${row("Resulting mortgage:", fmt(d.Resulting_Mortgage), { tab: true })}
+    ${row("Mortgage term:", d.Mortgage_term_Years + " yrs", { tab: true })}
   `)}
 
   ${box(`
@@ -249,14 +252,16 @@ function buildHTML(d) {
     ${row("<u>Savings needed</u>", fmt(d.TOTAL_Savings_needed), { bold: true, topBorder: true })}
   `)}
 
-  <div style="text-align:center;font-size:19px;font-weight:800;color:${ORANGE};margin:4mm 0 3mm;">Why use Hipoteken?</div>
-  <div class="icon-grid">
-    ${iconCell(ICON_LICENSED, "Licensed")}
-    ${iconCell(ICON_INDEPENDENT, "Independent")}
-    ${iconCell(ICON_INTERNATIONAL, "International")}
-    ${iconCell(ICON_ONLINE, "Online")}
-    ${iconCell(ICON_EFFICIENT, "Efficient")}
-    ${iconCell(ICON_EXPERIENCED, "Experienced")}
+  <div class="why-box">
+    <div style="text-align:center;font-size:23px;font-weight:800;color:${ORANGE};margin-bottom:3mm;">Why use Hipoteken?</div>
+    <div class="icon-grid">
+      ${iconCell(ICON_LICENSED, "Licensed")}
+      ${iconCell(ICON_INDEPENDENT, "Independent")}
+      ${iconCell(ICON_INTERNATIONAL, "International")}
+      ${iconCell(ICON_ONLINE, "Online")}
+      ${iconCell(ICON_EFFICIENT, "Efficient")}
+      ${iconCell(ICON_EXPERIENCED, "Experienced")}
+    </div>
   </div>
 
   <div class="page-num">1</div>
@@ -309,8 +314,10 @@ function buildHTML(d) {
     </div>
   `)}
 
-  <div style="text-align:center;font-size:19px;font-weight:800;color:${ORANGE};margin:4mm 0 2mm;">Next Steps</div>
-  ${nextSteps()}
+  <div class="why-box">
+    <div style="text-align:center;font-size:23px;font-weight:800;color:${ORANGE};margin-bottom:3mm;">Next Steps</div>
+    ${nextSteps()}
+  </div>
 
   <div class="page-num">2</div>
 </div>
@@ -332,16 +339,16 @@ function buildHTML(d) {
       Cost of purchase
       <span style="font-style:italic;font-weight:400;font-size:11px;"> (estimated, please check with your solicitor as will be the best to calculate this):</span>
     </div>
-    <div style="display:flex;align-items:baseline;padding:2px 0;font-size:12px;">
-      <span style="width:50%;flex-shrink:0;">Transfer tax/ VAT &nbsp;&nbsp;<span style="margin-left:4px;">${pct(d.Transfer_TAX_VAT)}</span></span>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;padding:2px 0;font-size:12px;">
+      <span style="font-weight:700;">Transfer tax/ VAT &nbsp;&nbsp;<span style="margin-left:4px;">${pct(d.Transfer_TAX_VAT)}</span></span>
       <span style="white-space:nowrap;">${fmt(d.Transfer_TAX_VAT1)}</span>
     </div>
-    <div style="display:flex;align-items:baseline;padding:2px 0;font-size:12px;">
-      <span style="width:50%;flex-shrink:0;">Stamp duty &nbsp;&nbsp;<span style="margin-left:4px;">${pct(d.Stamp_Duty)}</span></span>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;padding:2px 0;font-size:12px;">
+      <span style="font-weight:700;">Stamp duty &nbsp;&nbsp;<span style="margin-left:4px;">${pct(d.Stamp_Duty)}</span></span>
       <span style="white-space:nowrap;">${fmt(d.Stamp_Duty2)}</span>
     </div>
-    <div style="display:flex;align-items:baseline;padding:2px 0;font-size:12px;">
-      <span style="width:50%;flex-shrink:0;">Buyer agent fee &nbsp;&nbsp;<span style="margin-left:4px;">${pct(buyerPct)}</span></span>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;padding:2px 0;font-size:12px;">
+      <span style="font-weight:700;">Buyer agent fee &nbsp;&nbsp;<span style="margin-left:4px;">${pct(buyerPct)}</span></span>
       <span style="white-space:nowrap;">${fmt(buyerFee)}</span>
     </div>
     ${row("Solicitor fees", fmt(solicitorFee))}
@@ -370,15 +377,15 @@ function buildHTML(d) {
     <div style="font-size:11px;font-style:italic;margin-top:4px;color:#444;">Bank set up fee or life insurance costs would be on top of this, although in most they don´t apply</div>
   `)}
 
-  <div style="background:#f0e0d0;border-radius:4px;padding:8px 12px;margin-bottom:3mm;font-size:11px;line-height:1.45;">
+  <div style="text-align:center;margin-bottom:4mm;font-size:12.5px;line-height:1.55;">
     <strong>Hipoteken International Mortgages</strong> is a commercial brand, registered by Hipoteken S.L., a registered company in Spain, with registation number ESB06838445, and registered address Calle Serrano Morales 11, 4, 46004 Valencia, Spain. You can check our mortgage broker registration with the bank of Spain and legal information here.
   </div>
 
-  <div style="text-align:center;margin:3mm 0 2mm;font-size:11px;color:${ORANGE};font-weight:600;">
+  <div style="text-align:center;margin:2mm 0 4mm;font-size:12.5px;color:#2F80B4;font-weight:700;text-decoration:underline;">
     https://hipoteken.com/legal-mortgage-regulation
   </div>
 
-  <div style="font-style:italic;font-size:10.5px;text-align:center;line-height:1.45;color:#444;">
+  <div style="font-style:italic;font-size:12px;text-align:center;line-height:1.55;color:#222;">
     Disclaimer - simulation supplied for orientative purposes only. Conditions of final mortgage offers can change
     depending on financial market situation, risk assesment, property area, type and real estate market conditions, and
     many other factors each bank considers differently. The material contained within all of our marketing material has
@@ -390,7 +397,7 @@ function buildHTML(d) {
     any title deeds and bank guarantee attributed to your property.
   </div>
 
-  <div class="page-num">3</div>
+  <div class="page-num" style="color:${ORANGE};">3</div>
 </div>
 
 </body>
