@@ -195,7 +195,7 @@ function buildHTML(d) {
     display:flex; flex-direction:column;
   }
   .page:last-child { break-after:auto; page-break-after:auto; }
-  .page-num { position:absolute; bottom:8mm; right:17mm; font-size:16px; font-weight:700; z-index:2; }
+  .page-num { position:absolute; bottom:8mm; right:17mm; font-size:16px; font-weight:700; color:${ORANGE}; z-index:2; }
   .main-title { font-size:30px; font-weight:800; color:${ORANGE}; }
   .sec-title { font-size:23px; font-weight:800; color:${ORANGE}; margin:4mm 0 3mm; }
   .sub-title { font-size:17px; font-weight:800; color:${ORANGE}; margin:3mm 0 2mm; }
@@ -413,7 +413,7 @@ function buildHTML(d) {
     any title deeds and bank guarantee attributed to your property.
   </div>
 
-  <div class="page-num" style="color:${ORANGE};">3</div>
+  <div class="page-num">3</div>
 </div>
 
 </body>
