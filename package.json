@@ -3,11 +3,16 @@
   "version": "1.0.0",
   "description": "Generate Hipoteken mortgage simulation PDF from CRM data",
   "main": "generate.js",
+  "type": "module",
   "scripts": {
     "generate": "node generate.js",
-    "start": "node generate.js"
+    "start": "node server.js",
+    "server": "node server.js",
+    "worker": "node worker.js"
   },
   "dependencies": {
+    "amqplib": "^1.0.3",
+    "express": "^4.22.1",
     "puppeteer": "^22.0.0"
   }
 }
