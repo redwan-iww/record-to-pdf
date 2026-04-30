@@ -1,9 +1,6 @@
 // worker that pulls jobs from rabbit, renders the pdf, and replies with the result
 import { generatePdf, closeBrowser } from "./src/pdf/index.js";
-import {
-  createRabbitMQChannel,
-  close as closeRabbit,
-} from "./src/queue/rabbit.js";
+import { createRabbitMQChannel, closeRabbitMQ } from "./src/queue/rabbit.js";
 import { QUEUE_NAME, PDF_CONCURRENCY } from "./src/config.js";
 
 const channel = await createRabbitMQChannel();
@@ -60,7 +57,7 @@ async function shutdown(signal) {
   console.log(`${signal} received, shutting down...`);
   try {
     await channel.close();
-    await closeRabbit();
+    await closeRabbitMQ();
     await closeBrowser();
   } catch (err) {
     console.error("shutdown error:", err.message);
