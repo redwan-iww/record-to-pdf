@@ -9,6 +9,7 @@ const jobs = new Map();
 
 let channel = null;
 let replyQueue = null;
+let cleanupInterval = null;
 
 export async function init() {
   channel = await createChannel();
@@ -33,12 +34,17 @@ export async function init() {
   }, { noAck: true });
 
   // cleanup expired jobs every minute
-  setInterval(cleanup, 60000).unref();
+  cleanupInterval = setInterval(cleanup, 60000);
+  cleanupInterval.unref();
 
   console.log("job store ready, reply queue:", replyQueue);
 }
 
 export async function close() {
+  if (cleanupInterval) {
+    clearInterval(cleanupInterval);
+    cleanupInterval = null;
+  }
   if (channel) {
     try { await channel.close(); } catch {}
     channel = null;

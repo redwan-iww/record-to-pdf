@@ -24,17 +24,30 @@ const server = app.listen(PORT, () => {
 });
 
 // graceful shutdown
-async function shutdown(signal) {
+function shutdown(signal) {
   console.log(`${signal} received, shutting down...`);
-  server.close();
-  try {
-    await jobStore.close();
-    await closeRabbit();
-    await closeBrowser();
-  } catch (err) {
-    console.error("shutdown error:", err.message);
-  }
-  process.exit(0);
+
+  const serverClose = () =>
+    new Promise((resolve) => {
+      server.close((err) => {
+        if (err) console.error("server.close error:", err.message);
+        resolve();
+      });
+    });
+
+  const closeAll = async () => {
+    try { await serverClose(); } catch (err) { console.error("server.close error:", err.message); }
+    try { await jobStore.close(); } catch (err) { console.error("jobStore.close error:", err.message); }
+    try { await closeRabbit(); } catch (err) { console.error("closeRabbit error:", err.message); }
+    try { await closeBrowser(); } catch (err) { console.error("closeBrowser error:", err.message); }
+  };
+
+  const forceExit = new Promise((resolve) => setTimeout(() => {
+    console.error("shutdown timeout — forcing exit");
+    resolve();
+  }, 5000));
+
+  Promise.race([closeAll(), forceExit]).then(() => process.exit(0));
 }
 
 process.on("SIGINT", () => shutdown("SIGINT"));
