@@ -3,7 +3,7 @@ import express from "express";
 import { PORT } from "./src/config.js";
 import { apiKey } from "./src/middleware/auth.js";
 import * as jobStore from "./src/queue/jobStore.js";
-import { close as closeRabbit } from "./src/queue/rabbit.js";
+import { closeRabbitMQ } from "./src/queue/rabbit.js";
 import { closeBrowser } from "./src/pdf/index.js";
 import healthRoutes from "./src/routes/health.js";
 import pdfRoutes from "./src/routes/pdf.js";
@@ -18,7 +18,7 @@ app.use(pdfRoutes);
 app.use(jobRoutes);
 
 // start
-await jobStore.init();
+await jobStore.initChannel();
 const server = app.listen(PORT, () => {
   console.log(`server running on port ${PORT}`);
 });
@@ -36,16 +36,34 @@ function shutdown(signal) {
     });
 
   const closeAll = async () => {
-    try { await serverClose(); } catch (err) { console.error("server.close error:", err.message); }
-    try { await jobStore.close(); } catch (err) { console.error("jobStore.close error:", err.message); }
-    try { await closeRabbit(); } catch (err) { console.error("closeRabbit error:", err.message); }
-    try { await closeBrowser(); } catch (err) { console.error("closeBrowser error:", err.message); }
+    try {
+      await serverClose();
+    } catch (err) {
+      console.error("server.close error:", err.message);
+    }
+    try {
+      await jobStore.closeChannel();
+    } catch (err) {
+      console.error("jobStore.closeChannel error:", err.message);
+    }
+    try {
+      await closeRabbitMQ();
+    } catch (err) {
+      console.error("closeRabbitMQ error:", err.message);
+    }
+    try {
+      await closeBrowser();
+    } catch (err) {
+      console.error("closeBrowser error:", err.message);
+    }
   };
 
-  const forceExit = new Promise((resolve) => setTimeout(() => {
-    console.error("shutdown timeout — forcing exit");
-    resolve();
-  }, 5000));
+  const forceExit = new Promise((resolve) =>
+    setTimeout(() => {
+      console.error("shutdown timeout — forcing exit");
+      resolve();
+    }, 5000),
+  );
 
   Promise.race([closeAll(), forceExit]).then(() => process.exit(0));
 }

@@ -1,12 +1,17 @@
 // worker that pulls jobs from rabbit, renders the pdf, and replies with the result
 import { generatePdf, closeBrowser } from "./src/pdf/index.js";
-import { createChannel, close as closeRabbit } from "./src/queue/rabbit.js";
+import {
+  createRabbitMQChannel,
+  close as closeRabbit,
+} from "./src/queue/rabbit.js";
 import { QUEUE_NAME, PDF_CONCURRENCY } from "./src/config.js";
 
-const channel = await createChannel();
+const channel = await createRabbitMQChannel();
 await channel.prefetch(PDF_CONCURRENCY);
 
-console.log(`worker ready (queue=${QUEUE_NAME}, concurrency=${PDF_CONCURRENCY})`);
+console.log(
+  `worker ready (queue=${QUEUE_NAME}, concurrency=${PDF_CONCURRENCY})`,
+);
 
 channel.consume(QUEUE_NAME, async (msg) => {
   if (!msg) return;
@@ -21,11 +26,13 @@ channel.consume(QUEUE_NAME, async (msg) => {
     if (replyTo) {
       channel.sendToQueue(
         replyTo,
-        Buffer.from(JSON.stringify({
-          ok: true,
-          pdfBase64: buf.toString("base64"),
-        })),
-        { correlationId }
+        Buffer.from(
+          JSON.stringify({
+            ok: true,
+            pdfBase64: buf.toString("base64"),
+          }),
+        ),
+        { correlationId },
       );
     }
 
@@ -39,7 +46,7 @@ channel.consume(QUEUE_NAME, async (msg) => {
       channel.sendToQueue(
         replyTo,
         Buffer.from(JSON.stringify({ ok: false, error: err.message })),
-        { correlationId }
+        { correlationId },
       );
     }
 

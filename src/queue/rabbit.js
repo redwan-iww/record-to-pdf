@@ -4,9 +4,9 @@ import { RABBIT_URL, QUEUE_NAME, DLX, DLQ } from "../config.js";
 
 let conn = null;
 
-async function connect() {
+async function connectRabbitMQ() {
   if (conn) return conn;
-  conn = await amqp.connect(RABBIT_URL);
+  conn = await amqp.connectRabbitMQ(RABBIT_URL);
 
   conn.on("close", () => {
     console.log("rabbit connection closed");
@@ -19,7 +19,7 @@ async function connect() {
   return conn;
 }
 
-export async function close() {
+export async function closeRabbitMQ() {
   if (conn) {
     try {
       await conn.close();
@@ -31,8 +31,8 @@ export async function close() {
 }
 
 // creates the channel and sets up all the queues / dead letter exchange
-export async function createChannel() {
-  const connection = await connect();
+export async function createRabbitMQChannel() {
+  const connection = await connectRabbitMQ();
   const ch = await connection.createChannel();
 
   // dead letter setup so failed jobs don't just disappear
