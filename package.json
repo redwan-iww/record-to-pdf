@@ -7,6 +7,7 @@
   "scripts": {
     "generate": "node generate.js",
     "start": "node server.js",
+    "dev": "npm start",
     "server": "node server.js",
     "worker": "node worker.js"
   },
